@@ -24,7 +24,7 @@ def get_text_secret(secret_ocid):
     except Exception as ex:
         print("ERROR: failed to retrieve the secret content", ex, flush=True)
         raise
-    return {"secret content": decrypted_secret_content}
+    return {"secret_content": decrypted_secret_content}
 
 
 def get_binary_secret_into_file(secret_ocid, filepath):
