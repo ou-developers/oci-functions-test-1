@@ -49,7 +49,7 @@ def get_binary_secret_into_file(secret_ocid, filepath):
 
 def handler(ctx, data: io.BytesIO=None):
     logging.getLogger().info("function start")
-
+    
     secret_ocid = secret_type = resp = ""
     try:
         cfg = dict(ctx.Config())
@@ -67,10 +67,10 @@ def handler(ctx, data: io.BytesIO=None):
         resp = get_binary_secret_into_file(secret_ocid, "/tmp/secret")
     else:
         raise ValueError('the value of the configuration parameter "secret_type" has to be either "text" or "binary"')
-
+    name = "You have successfully completed this task of Utilizing OCI Vault Secrets in a Python Function"
     logging.getLogger().info("function end")
     return response.Response(
-        ctx, 
-        response_data=resp,
+        ctx, response_data=json.dumps(
+            {"message": "Congratulations! {0}".format(name)}),
         headers={"Content-Type": "application/json"}
     )
