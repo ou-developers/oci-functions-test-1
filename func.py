@@ -24,7 +24,7 @@ def get_text_secret(secret_ocid):
     except Exception as ex:
         print("ERROR: failed to retrieve the secret content", ex, flush=True)
         raise
-    return {"secret_content": decrypted_secret_content}
+    return decrypted_secret_content
 
 
 def get_binary_secret_into_file(secret_ocid, filepath):
@@ -44,7 +44,7 @@ def get_binary_secret_into_file(secret_ocid, filepath):
         print("ERROR: cannot write to file " + filepath, ex, flush=True)
         raise
     secret_md5 = hashlib.md5(decrypted_secret_content).hexdigest()
-    return {"secret md5": secret_md5}
+    return decrypted_secret_content.decode("utf-8")
 
 
 def handler(ctx, data: io.BytesIO=None):
@@ -71,6 +71,6 @@ def handler(ctx, data: io.BytesIO=None):
     logging.getLogger().info("function end")
     return response.Response(
         ctx, response_data=json.dumps(
-            {"message": "Congratulations! {0}".format(name)}),
+            {"message": "Congratulations! {0}".format(name), "decrypted_secret_content": decrypted_secret_content}),
         headers={"Content-Type": "application/json"}
     )
