@@ -71,6 +71,8 @@ def handler(ctx, data: io.BytesIO=None):
     logging.getLogger().info("function end")
     return response.Response(
         ctx, response_data=json.dumps(
-            {"message": "Congratulations! {0}".format(name), "decrypted_secret_content": decrypted_secret_content}),
+            {"message": "Congratulations! {0}".format(name),
+        headers={"Content-Type": "application/json"}) ctx, 
+        response_data=resp,
         headers={"Content-Type": "application/json"}
     )
