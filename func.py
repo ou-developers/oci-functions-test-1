@@ -1,10 +1,3 @@
-#
-# vault-secret version 1.0.
-#
-# Copyright (c) 2020 Oracle, Inc.
-# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
-#
-
 import io
 import json
 import base64
@@ -15,7 +8,6 @@ import hashlib
 from fdk import response
 
 def get_text_secret(secret_ocid):
-    #decrypted_secret_content = ""
     signer = oci.auth.signers.get_resource_principals_signer()
     try:
         client = oci.secrets.SecretsClient({}, signer=signer)
@@ -26,9 +18,7 @@ def get_text_secret(secret_ocid):
         raise
     return decrypted_secret_content
 
-
 def get_binary_secret_into_file(secret_ocid, filepath):
-    #decrypted_secret_content = ""
     signer = oci.auth.signers.get_resource_principals_signer()
     try:
         client = oci.secrets.SecretsClient({}, signer=signer)
@@ -44,12 +34,11 @@ def get_binary_secret_into_file(secret_ocid, filepath):
         print("ERROR: cannot write to file " + filepath, ex, flush=True)
         raise
     secret_md5 = hashlib.md5(decrypted_secret_content).hexdigest()
-    return decrypted_secret_content.decode("utf-8")
-
+    return decrypted_secret_content, secret_md5
 
 def handler(ctx, data: io.BytesIO=None):
     logging.getLogger().info("function start")
-    
+
     secret_ocid = secret_type = resp = ""
     try:
         cfg = dict(ctx.Config())
@@ -62,17 +51,19 @@ def handler(ctx, data: io.BytesIO=None):
         raise
 
     if secret_type == "text":
-        resp = get_text_secret(secret_ocid)
+        decrypted_secret_content = get_text_secret(secret_ocid)
+        resp = {"message": "Congratulations! You have successfully completed this task of Utilizing OCI Vault Secrets in a Python Function", 
+                "secret_content": decrypted_secret_content}
     elif secret_type == "binary":
-        resp = get_binary_secret_into_file(secret_ocid, "/tmp/secret")
+        decrypted_secret_content, secret_md5 = get_binary_secret_into_file(secret_ocid, "/tmp/secret")
+        resp = {"message": "Congratulations! You have successfully completed this task of Utilizing OCI Vault Secrets in a Python Function", 
+                "secret_content": decrypted_secret_content, "secret_md5": secret_md5}
     else:
         raise ValueError('the value of the configuration parameter "secret_type" has to be either "text" or "binary"')
-    name = "You have successfully completed this task of Utilizing OCI Vault Secrets in a Python Function"
+
     logging.getLogger().info("function end")
     return response.Response(
-        ctx, response_data=json.dumps(
-            {"message": "Congratulations! {0}".format(name),
-        headers={"Content-Type": "application/json"}) ctx, 
-        response_data=resp,
+        ctx, 
+        response_data=json.dumps(resp),
         headers={"Content-Type": "application/json"}
     )
